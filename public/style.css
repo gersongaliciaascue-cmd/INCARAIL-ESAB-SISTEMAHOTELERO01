@@ -1,0 +1,45 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }  
+body { font-family: Arial, sans-serif; background: #0a0a0a; color: white; overflow-x: hidden; }  
+  
+#intro { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #111; }  
+.llama { width: 100px; height: 100px; background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🦙</text></svg>') no-repeat center; animation: caminar 2s linear infinite; }  
+@keyframes caminar { 0% { transform: translateX(-50px); } 100% { transform: translateX(50px); }  
+#intro button { margin-top: 20px; padding: 12px 30px; font-size: 18px; cursor: pointer; }  
+  
+#main { min-height: 100vh; position: relative; padding: 20px; text-align: center; }  
+.bg-machu { position: fixed; top:0; left:0; right:0; bottom:0; background: url('https://images.unsplash.com/photo-1587593810167-23187d46d95d?q=80') center/cover no-repeat; opacity: 0.3; z-index: -1; }  
+h1 { font-family: 'Libre Baskerville', serif; font-size: 3em; margin: 30px 0; }  
+  
+.menu { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-bottom: 30px; }  
+.card { width: 280px; height: 180px; background: #222; border: 2px solid #555; border-radius: 12px; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; transition: 0.3s; }  
+.card:hover { transform: scale(1.05); border-color: #0af; }  
+.titulo-card { width: 100%; background: #0008; padding: 10px; font-weight: bold; }  
+  
+.card-rect { width: 300px; margin: 0 auto; padding: 15px; background: #a52; border-radius: 8px; cursor: pointer; font-weight: bold; }  
+  
+#bloc-notas { width: 300px; margin: 40px auto 0; background: #1a1a1a; padding: 15px; border: 1px dashed #666; }  
+#bloc-notas textarea { width: 100%; height: 100px; background: #000; color: #0f0; border: none; padding: 5px; }  
+  
+#overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:#000a; z-index: 999; }  
+#modal { display:none; position:fixed; top:5%; left:5%; right:5%; bottom:5%; background:#1a1a1a; z-index: 1000; border-radius: 12px; padding: 20px; overflow:auto; }  
+.cerrar { float: right; background: red; border: none; color: white; padding: 5px 10px; cursor: pointer; }  
+  
+.habitacion { width: 120px; height: 120px; border: 2px solid #555; display: inline-flex; align-items: center; justify-content: center; margin: 10px; cursor: pointer; font-weight: bold; }  
+.disponible { background: #0a50; }  
+.ocupado-m { background: #00aaff88; }  
+.ocupado-f { background: #ff69b488; }  
+  
+.cuarto-2d { width: 300px; height: 300px; border: 2px solid #fff; margin: 20px auto; position: relative; }  
+.cama { width: 60px; height: 60px; border: 1px solid #fff; position: absolute; cursor: pointer; display: flex; align-items: center; justify-content: center; }  
+.cama:nth-child(1) { top: 10px; left: 10px; }  
+.cama:nth-child(2) { top: 10px; right: 10px; }  
+.cama:nth-child(3) { bottom: 10px; left: 10px; }  
+.cama.ocupada { background: #555; pointer-events: none; }  
+  
+.form-reserva input, .form-reserva select { display: block; width: 90%; margin: 10px auto; padding: 8px; }  
+  
+.reportes-split { display: flex; gap: 20px; flex-wrap: wrap; }  
+.reportes-col { flex: 1; min-width: 280px; border: 1px solid #444; padding: 10px; max-height: 70vh; overflow:auto; }  
+.item-reporte { border-bottom: 1px solid #333; padding: 8px 0; display: flex; justify-content: space-between; }  
+  
+@media(max-width: 600px) { h1 { font-size: 2em; } .card { width: 90%; }  

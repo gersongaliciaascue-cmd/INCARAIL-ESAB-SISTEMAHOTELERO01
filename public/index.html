@@ -1,0 +1,45 @@
+<!DOCTYPE html>  
+<html lang="es">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<title>INCA RAIL ESAB</title>  
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">  
+<link rel="stylesheet" href="style.css">  
+</head>  
+<body>  
+  
+<div id="intro">  
+  <div class="llama"></div>  
+  <button onclick="entrar()">Ingresar</button>  
+</div>  
+  
+<div id="main" style="display:none;">  
+  <div class="bg-machu"></div>  
+    
+  <h1>INCA RAIL ESAB</h1>  
+  
+  <div class="menu">  
+    <div class="card" onclick="abrirVivienda('CALICANTO')">  
+      <div class="titulo-card">VIVIENDA CALICANTO</div>  
+    </div>  
+    <div class="card" onclick="abrirVivienda('ANDENES')">  
+      <div class="titulo-card">VIVIENDA ANDENES</div>  
+    </div>  
+  </div>  
+  
+  <div class="card-rect" onclick="abrirReportes()">REPORTES</div>  
+  
+  <div id="bloc-notas">  
+    <h3>Bloc de Notas - Uso Futuro</h3>  
+    <textarea placeholder="Este espacio es independiente"></textarea>  
+  </div>  
+</div>  
+  
+<!-- Modal Generico -->  
+<div id="overlay" onclick="cerrarModal()"></div>  
+<div id="modal"></div>  
+  
+<script src="script.js"></script>  
+</body>  
+</html>  
