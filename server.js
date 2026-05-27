@@ -32,7 +32,7 @@ app.get('/api/data', (req, res) => {
   res.json(data);  
 });  
   
-// API: Reservar cama - exacto a tu foto  
+// API: Reservar cama  
 app.post('/api/reservar', (req, res) => {  
   const { vivienda, habitacion, cama, cliente } = req.body;  
   const habKey = String(habitacion);   
@@ -48,7 +48,7 @@ app.post('/api/reservar', (req, res) => {
     data[vivienda][habKey] = {};  
   }  
   
-  // 3. Ahora sí puedes revisar la cama sin que crashee  
+  // 3. Ahora sí revisamos si la cama está libre: null o undefined  
   if (data[vivienda][habKey][cama] == null) {  
     data[vivienda][habKey][cama] = cliente;  
     saveData(data);  
@@ -56,27 +56,25 @@ app.post('/api/reservar', (req, res) => {
   } else {  
     return res.json({ ok: false, msg: 'Cama ocupada' });  
   }  
-}); 
+});  
+ 
   
-// API: Liberar cama - exacto a tu foto  
+// API: Liberar cama  
 app.post('/api/liberar', (req, res) => {  
   const { password, vivienda, habitacion, cama } = req.body;  
-    
-  // Si usas password, descomenta esta línea  
-  // if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
-  
   const habKey = String(habitacion);  
   const data = loadData();  
+  
+  // Si usas password, descomenta esta línea  
+  // if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
   
   // Validar que exista vivienda, habitación y cama antes de tocarla  
   if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][cama]!== undefined) {  
     data[vivienda][habKey][cama] = null;  
     saveData(data);  
+    return res.json({ ok: true, msg: 'Cama liberada' });  
+  } else {  
+    return res.json({ ok: false, msg: 'La cama no existe o ya está libre' });  
   }  
-    
-  res.json({ ok: true });  
-});   
-  
-app.listen(PORT, () => {  
-  console.log(`Servidor corriendo en puerto ${PORT}`);  
 });  
+  
