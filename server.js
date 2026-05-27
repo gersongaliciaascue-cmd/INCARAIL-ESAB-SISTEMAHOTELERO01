@@ -33,6 +33,7 @@ app.post('/api/reservar', (req, res) => {
     const { vivienda, habitacion, cama, cliente } = req.body;  
     const data = loadData();  
   
+    // CORRECCIÓN CLAVE: Ahora sí revisamos la cama específica [cama]  
     if (data[vivienda][habitacion][cama] === null) {  
         data[vivienda][habitacion][cama] = cliente;  
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));  
@@ -42,13 +43,13 @@ app.post('/api/reservar', (req, res) => {
     }  
 });  
   
-// API: Liberar cama - para REPORTES  
+// API: Liberar cama - para REPORTES con password incarail789  
 app.post('/api/liberar', (req, res) => {  
     const { password, vivienda, habitacion, cama } = req.body;  
     if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
   
     const data = loadData();  
-    data[vivienda][habitacion][cama] = null;  
+    data[vivienda][habitacion][cama] = null; // CORRECCIÓN CLAVE: [cama]  
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));  
     res.json({ ok: true });  
 });  
