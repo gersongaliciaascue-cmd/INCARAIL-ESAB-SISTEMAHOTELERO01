@@ -34,8 +34,10 @@ app.get('/api/data', (req, res) => {
   
 // API: Reservar cama  
 app.post('/api/reservar', (req, res) => {  
-  const { vivienda, habitacion, cama, cliente } = req.body;  
-  const habKey = String(habitacion);   
+  const { vivienda, habitacion, cama, nombre } = req.body;  
+  const habKey = String(habitacion); 
+  const camaKey = String(cama);
+  
   const data = loadData();  
   
   // 1. Si no existe la vivienda, la creamos  
@@ -45,10 +47,11 @@ app.post('/api/reservar', (req, res) => {
   if (!data[vivienda][habKey]) data[vivienda][habKey] = {};    
   
   // 3. Ahora sí revisamos si la cama está libre: null o undefined  
-  if (data[vivienda][habKey][cama] == null) {  
-    data[vivienda][habKey][cama] = cliente;  
+  if (data[vivienda][habKey][camaKey] == null) {  
+    data[vivienda][habKey][camaKey] = { nombre, fecha: new
+Date().toISOString() };  
     saveData(data);  
-    return res.json({ ok: true });  
+    return res.json({ ok: true, msg 'Cama reservada' });  
   } else {  
     return res.json({ ok: false, msg: 'Cama ocupada' });  
   }  
@@ -58,19 +61,21 @@ app.post('/api/reservar', (req, res) => {
 // API: Liberar cama  
 app.post('/api/liberar', (req, res) => {  
   const { password, vivienda, habitacion, cama } = req.body;  
-  const habKey = String(habitacion);  
+  const habKey = String(habitacion); 
+  const camaKey = String(cama);
+ 
   const data = loadData();  
   
   // Si usas password, descomenta esta línea  
   // if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
   
   // Validar que exista vivienda, habitación y cama antes de tocarla  
-  if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][cama]!= null) {  
-    data[vivienda][habKey][cama] = null;  
+  if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][camakey]!= null) {  
+    data[vivienda][habKey][camaKey] = null;  
     saveData(data);  
     return res.json({ ok: true, msg: 'Cama liberada' });  
   } else {  
-    return res.json({ ok: false, msg: 'La cama no existe o ya está libre' });  
+    return res.json({ ok: false, msg: 'Cama no existe o ya está libre' });  
   }  
 });  
 
