@@ -27,7 +27,9 @@ function updateRoomColors() {
             const btn = document.querySelector(`#${vivienda}-rooms.room-btn[data-hab="${hab}"]`);  
             if (btn) {  
                 const camasObj = currentData[vivienda][hab] || {}; // CAMBIO: ahora es objeto  
-                const camasKeys = Object.keys(camasObj);  
+                for (ley i = 1; i<= 3; i++) {
+                const camasKeys = String(i);  
+                const cama = camaObj[camasKey];
                 const ocupadas = camasKeys.filter(key => camasObj[key]!== null).length; // CAMBIO  
                 const total = camasKeys.length > 0? camasKeys.length : 3; // Si no hay camas, asume 3  
   
