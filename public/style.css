@@ -1,133 +1,63 @@
-@import url('https://fonts.googleapis.com/css2?family=Baskervville:ital@0;1&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Baskervville', serif; }
+body { background: url('https://images.unsplash.com/photo-1587595431973-160d0d94add1') no-repeat center fixed; background-size: cover; color: #fff; text-align: center; }
+h1 { font-size: 3rem; margin: 20px 0; color: #d4a017; text-shadow: 2px 2px 4px #000; }
 
-:root {
-  --dorado: #D4AF37;
-  --verde-andenes: #2E8B57;
-  --azul-inca: #1A2A44;
-  --vidrio: rgba(0, 0, 0, 0.6);
-}
+/* Llama caminando */
+#llama-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 9999; }
+.llama { width: 100px; height: 100px; background: #f4e2d8; border-radius: 50% 50% 40% 40%; position: relative; animation: caminar 2s infinite linear; }
+.llama::before { content: ''; position: absolute; top: -30px; left: 30px; width: 20px; height: 40px; background: #f4e2d8; border-radius: 50%; }
+@keyframes caminar { 0% { transform: translateX(-100px); } 100% { transform: translateX(100vw); } }
+.hidden { display: none!important; }
 
-* { 
-  margin: 0; padding: 0; box-sizing: border-box; 
-  font-family: 'Baskervville', serif;
-}
+/* Menu Principal */
+.menu-principal { display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 50px; }
+.menu-principal button { width: 80%; max-width: 300px; padding: 20px; font-size: 1.5rem; background: rgba(0,0,0,0.5); border: 2px solid #fff; color: #fff; cursor: pointer; }
+#btn-calicanto { color: #d4a017; }
+#btn-andenes { color: #2ecc71; }
+#btn-reportes { max-width: 400px; }
 
-body {
-  background: url('https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=2070') no-repeat center fixed;
-  background-size: cover;
-  color: #fff;
-  overflow: hidden;
-}
+/* Bloc de notas aislado */
+#bloc-notas { position: fixed; bottom: 10px; left: 10px; width: 200px; background: rgba(0,0,0,0.7); padding: 10px; border: 1px solid #fff; z-index: 10; }
+#bloc-notas textarea { width: 100%; height: 80px; background: #222; color: #0f0; border: none; }
+.version-box { position: fixed; bottom: 10px; right: 10px; background: #fff; color: #000; padding: 10px 20px; font-size: 2rem; font-weight: bold; }
 
-/* 1. LOADER LLAMA CAMINANDO - No toca tu JS */
-#llama-loader {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--azul-inca);
-  display: flex; justify-content: center; align-items: center;
-  z-index: 9999;
-  animation: quitarLoader 0.5s ease 2.8s forwards;
-}
+/* Modales / Sobrepestañas */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
+.modal-content { background: #fff; color: #000; padding: 20px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+.modal-content.grande { max-width: 900px; display: flex; gap: 20px; }
+.close { position: absolute; top: 10px; right: 20px; font-size: 2rem; cursor: pointer; }
 
-.llama {
-  width: 120px; height: 120px;
-  background: #f5e6c8;
-  border-radius: 60% 60% 40% 40% / 50% 50% 40% 40%;
-  position: relative;
-  animation: caminar 2.5s linear infinite;
-}
-.llama::before { /* Cabeza */
-  content: ''; position: absolute; top: -40px; left: 35px;
-  width: 50px; height: 50px; background: #f5e6c8; border-radius: 50%;
-}
-.llama::after { /* Orejas */
-  content: ''; position: absolute; top: -55px; left: 40px;
-  width: 15px; height: 20px; background: #e0c9a6; border-radius: 50%;
-  box-shadow: 20px 0 0 #e0c9a6;
-}
+/* Lista de Hab */
+.hab-btn { width: 100%; padding: 15px; margin: 5px 0; border: 2px solid #000; cursor: pointer; font-size: 1.2rem; }
+.hab-btn.disponible { background: #2ecc71; }
+.hab-btn.ocupado { background: #e74c3c; color: #fff; }
 
-@keyframes caminar {
- 0% { transform: translateX(-150px); }
- 100% { transform: translateX(150vw); }
-}
-@keyframes quitarLoader {
-  to { opacity: 0; visibility: hidden; pointer-events: none; }
-}
+/* Vista 2D Cuarto */
+#vista-2d { width: 100%; height: 400px; background: #000; position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; padding: 20px; }
+.cama { background: #3498db; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; cursor: pointer; border: 3px solid #fff; }
+.cama.ocupada { background: #7f8c8d; cursor: not-allowed; }
+.cama.seleccionada { border: 5px solid #f1c40f; }
 
-/* Tu JS quita "hidden" de #app después de 2.5s. Esto hace que aparezca bonito */
-#app.hidden { opacity: 0; }
-#app {
-  position: relative; z-index: 2;
-  min-height: 100vh; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 20px; text-align: center;
-  transition: opacity 1s ease;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(26,42,68,0.8));
-}
+/* Formulario */
+#form-reserva { display: flex; flex-direction: column; gap: 10px; width: 300px; }
+#form-reserva input, #form-reserva select, #form-reserva button { padding: 10px; font-size: 1rem; }
 
-/* 2. TÍTULO ELEGANTE */
-h1 {
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  color: var(--dorado);
-  text-shadow: 0 0 20px rgba(212, 175, 55, 0.7);
-  margin-bottom: 50px;
-  letter-spacing: 4px;
-}
+/* Reportes */
+.modal-content.reportes { max-width: 1000px; }
+#reportes-content { display: flex; gap: 20px; }
+.reportes-col { width: 50%; text-align: left; }
+.reporte-item { border: 1px solid #000; padding: 10px; margin: 5px 0; display: flex; justify-content: space-between; }
+.btn-liberar { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; cursor: pointer; }
 
-/* 3. BOTONES TIPO VIDRIO */
-.menu-principal {
-  display: flex; flex-direction: column; gap: 25px;
-  width: 100%; max-width: 420px;
-}
-
-.menu-principal button {
-  padding: 20px 30px;
-  font-size: 1.5rem; font-weight: bold;
-  color: #fff;
-  background: var(--vidrio);
-  backdrop-filter: blur(12px);
-  border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-.menu-principal button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--dorado);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
-}
-
-#btn-calicanto { border-left: 6px solid var(--dorado); }
-#btn-andenes { border-left: 6px solid var(--verde-andenes); color: #A8E6CF; }
-#btn-reportes { margin-top: 30px; font-size: 1.2rem; }
-
-/* 4. BLOC DE NOTAS AISLADO */
-#bloc-notas {
-  position: fixed; bottom: 20px; left: 20px;
-  width: 300px; background: var(--vidrio); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 15px;
-  text-align: left; z-index: 3;
-}
-#bloc-notas h3 { font-size: 1rem; margin-bottom: 10px; color: var(--dorado); }
-#bloc-notas textarea {
-  width: 100%; height: 100px; background: transparent; border: none;
-  color: #eee; outline: none; resize: none; font-family: monospace;
-}
-
-/* 5. CAJA VERSION 1° */
-.version-box {
-  position: fixed; bottom: 20px; right: 20px;
-  background: #fff; color: #000; width: 70px; height: 70px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem; font-weight: bold; border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.5); z-index: 3;
-}
+/* Sexo de habitación */
+.habitacion-hombres.hab-btn { background: #3498db!important; color: #fff; }
+.habitacion-mujeres.hab-btn { background: #e91e63!important; color: #fff; }
 
 /* Responsive */
-@media (max-width: 600px) {
-  h1 { font-size: 2.2rem; }
- .menu-principal button { font-size: 1.2rem; padding: 15px; }
-  #bloc-notas { width: 220px; bottom: 100px; }
+@media (max-width: 768px) {
+  h1 { font-size: 2rem; }
+ .modal-content.grande { flex-direction: column; }
+  #vista-2d { height: 300px; }
+  #reportes-content { flex-direction: column; }
+ .reportes-col { width: 100%; }
 }
