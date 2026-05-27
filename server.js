@@ -35,29 +35,36 @@ app.get('/api/data', (req, res) => {
 // API: Reservar cama - exacto a tu foto  
 app.post('/api/reservar', (req, res) => {  
   const { vivienda, habitacion, cama, cliente } = req.body;  
-  const habKey = String(habitacion); // De tu foto  
+  const habKey = String(habitacion);  
   const data = loadData();  
   
-  if (data[vivienda][habKey][cama] === null) { // De tu foto  
-    data[vivienda][habKey][cama] = cliente; // De tu foto  
-    saveData(data); // De tu foto  
+  // 1. Si la habitación no existe, la creamos como objeto vacío  
+  if (!data[vivienda][habKey]) {  
+    data[vivienda][habKey] = {};  
+  }  
+  
+  // 2. Ahora sí puedes revisar la cama  
+  if (data[vivienda][habKey][cama] === null || data[vivienda][habKey][cama] === undefined) {  
+    data[vivienda][habKey][cama] = cliente;  
+    saveData(data);  
     res.json({ ok: true });  
   } else {  
-    res.status(409).json({ ok: false, msg: 'Cama ocupada' });  
+    res.json({ ok: false, msg: 'Cama ocupada' });  
   }  
 });  
   
 // API: Liberar cama - exacto a tu foto  
 app.post('/api/liberar', (req, res) => {  
-  const { password, vivienda, habitacion, cama } = req.body;  
-  if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
-  
-  const habKey = String(habitacion); // De tu foto  
+  const { vivienda, habitacion, cama } = req.body;  
+  const habKey = String(habitacion);  
   const data = loadData();  
-  data[vivienda][habKey][cama] = null; // De tu foto  
-  saveData(data); // De tu foto  
+  
+  if (data[vivienda][habKey]) {  
+    data[vivienda][habKey][cama] = null;  
+    saveData(data);  
+  }  
   res.json({ ok: true });  
-});  
+});   
   
 app.get('/api/reportes', (req, res) => {  
   const { password } = req.query;  
