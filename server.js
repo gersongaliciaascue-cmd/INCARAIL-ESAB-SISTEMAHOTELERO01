@@ -35,43 +35,47 @@ app.get('/api/data', (req, res) => {
 // API: Reservar cama - exacto a tu foto  
 app.post('/api/reservar', (req, res) => {  
   const { vivienda, habitacion, cama, cliente } = req.body;  
-  const habKey = String(habitacion);  
+  const habKey = String(habitacion);   
   const data = loadData();  
   
-  // 1. Si la habitación no existe, la creamos como objeto vacío  
+  // 1. Si no existe la vivienda, la creamos  
+  if (!data[vivienda]) {  
+    data[vivienda] = {};  
+  }  
+  
+  // 2. Si no existe la habitación, la creamos como objeto de camas  
   if (!data[vivienda][habKey]) {  
     data[vivienda][habKey] = {};  
   }  
   
-  // 2. Ahora sí puedes revisar la cama  
-  if (data[vivienda][habKey][cama] === null || data[vivienda][habKey][cama] === undefined) {  
+  // 3. Ahora sí puedes revisar la cama sin que crashee  
+  if (data[vivienda][habKey][cama] == null) {  
     data[vivienda][habKey][cama] = cliente;  
     saveData(data);  
-    res.json({ ok: true });  
+    return res.json({ ok: true });  
   } else {  
-    res.json({ ok: false, msg: 'Cama ocupada' });  
+    return res.json({ ok: false, msg: 'Cama ocupada' });  
   }  
-});  
+}); 
   
 // API: Liberar cama - exacto a tu foto  
 app.post('/api/liberar', (req, res) => {  
-  const { vivienda, habitacion, cama } = req.body;  
+  const { password, vivienda, habitacion, cama } = req.body;  
+    
+  // Si usas password, descomenta esta línea  
+  // if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
+  
   const habKey = String(habitacion);  
   const data = loadData();  
   
-  if (data[vivienda][habKey]) {  
+  // Validar que exista vivienda, habitación y cama antes de tocarla  
+  if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][cama]!== undefined) {  
     data[vivienda][habKey][cama] = null;  
     saveData(data);  
   }  
+    
   res.json({ ok: true });  
 });   
-  
-app.get('/api/reportes', (req, res) => {  
-  const { password } = req.query;  
-  if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
-  const data = loadData();  
-  res.json(data);  
-});  
   
 app.listen(PORT, () => {  
   console.log(`Servidor corriendo en puerto ${PORT}`);  
