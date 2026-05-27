@@ -20,27 +20,28 @@ async function loadData() {
 }  
   
 // 2. Pintar habitaciones: Verde=Libre, Amarillo=Parcial, Rojo=Llena  
-function updateRoomColors() {  
-    ['calicanto', 'andenes'].forEach(vivienda => {  
-        if (!currentData[vivienda]) return; // CAMBIO: validar que exista  
-        Object.keys(currentData[vivienda]).forEach(hab => {  
-            const btn = document.querySelector(`#${vivienda}-rooms.room-btn[data-hab="${hab}"]`);  
-            if (btn) {  
-                const camasObj = currentData[vivienda][hab] || {}; // CAMBIO: ahora es objeto  
-                for (ley i = 1; i<= 3; i++) {
-                const camasKeys = String(i);  
-                const cama = camaObj[camasKey];
-                const ocupadas = camasKeys.filter(key => camasObj[key]!== null).length; // CAMBIO  
-                const total = camasKeys.length > 0? camasKeys.length : 3; // Si no hay camas, asume 3  
-  
-                btn.classList.remove('full', 'partial');  
-                if (ocupadas === total && total > 0) btn.classList.add('full');  
-                else if (ocupadas > 0) btn.classList.add('partial');  
-                // CAMBIO: Si ocupadas = 0, queda sin clase = verde/libre  
-            }  
-        });  
-    });  
-}  
+function updateRoomColors() {
+    ['calicanto', 'andenes'].forEach(vivienda => {
+        if (!currentData[vivienda]) return;
+        Object.keys(currentData[vivienda]).forEach(hab => {
+            const btn = document.querySelector(#${vivienda}-rooms.room-btn[data-hab="${hab}"]);
+            if (btn) {
+                const camasObj = currentData[vivienda][hab] || {};
+
+                let ocupadas = 0;
+                for (let i = 1; i <= 3; i++) {
+                    if (camasObj[String(i)]!= null) ocupadas++;
+                }
+
+                const total = 3; // Siempre son 3 camas por habitación
+
+                btn.classList.remove('full', 'partial');
+                if (ocupadas === total) btn.classList.add('full');
+                else if (ocupadas > 0) btn.classList.add('partial');
+            }
+        });
+    });
+} 
   
 function goToRooms(vivienda) {  
     currentVivienda = vivienda;  
@@ -60,7 +61,7 @@ function openRoom(habitacion) {
     const camasObj = currentData[currentVivienda][habitacion] || {}; // CAMBIO  
   
     // CAMBIO: Vamos a mostrar Cama 1, 2, 3 siempre  
-    for (let i = 1; i <= 3; i++) {  
+    for (ley i = 1; i <= 3; i++) {  
         const camaKey = String(i);  
         const cama = camasObj[camaKey]; // CAMBIO: accede por key  
   
