@@ -39,14 +39,10 @@ app.post('/api/reservar', (req, res) => {
   const data = loadData();  
   
   // 1. Si no existe la vivienda, la creamos  
-  if (!data[vivienda]) {  
-    data[vivienda] = {};  
-  }  
+  if (!data[vivienda]) data[vivienda] = {};    
   
   // 2. Si no existe la habitación, la creamos como objeto de camas  
-  if (!data[vivienda][habKey]) {  
-    data[vivienda][habKey] = {};  
-  }  
+  if (!data[vivienda][habKey]) data[vivienda][habKey] = {};    
   
   // 3. Ahora sí revisamos si la cama está libre: null o undefined  
   if (data[vivienda][habKey][cama] == null) {  
@@ -69,7 +65,7 @@ app.post('/api/liberar', (req, res) => {
   // if (password!== 'incarail789') return res.status(403).json({ ok: false, msg: 'Password incorrecto' });  
   
   // Validar que exista vivienda, habitación y cama antes de tocarla  
-  if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][cama]!== undefined) {  
+  if (data[vivienda] && data[vivienda][habKey] && data[vivienda][habKey][cama]!= null) {  
     data[vivienda][habKey][cama] = null;  
     saveData(data);  
     return res.json({ ok: true, msg: 'Cama liberada' });  
