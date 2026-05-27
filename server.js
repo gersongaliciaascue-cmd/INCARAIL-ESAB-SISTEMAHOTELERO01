@@ -38,8 +38,8 @@ app.post('/api/reservar', (req, res) => {
   const habKey = String(habitacion); // De tu foto  
   const data = loadData();  
   
-  if (data[vivienda][habKey] === null) { // De tu foto  
-    data[vivienda][habKey] = cliente; // De tu foto  
+  if (data[vivienda][habKey][cama] === null) { // De tu foto  
+    data[vivienda][habKey][cama] = cliente; // De tu foto  
     saveData(data); // De tu foto  
     res.json({ ok: true });  
   } else {  
@@ -54,7 +54,7 @@ app.post('/api/liberar', (req, res) => {
   
   const habKey = String(habitacion); // De tu foto  
   const data = loadData();  
-  data[vivienda][habKey] = null; // De tu foto  
+  data[vivienda][habKey][cama] = null; // De tu foto  
   saveData(data); // De tu foto  
   res.json({ ok: true });  
 });  
