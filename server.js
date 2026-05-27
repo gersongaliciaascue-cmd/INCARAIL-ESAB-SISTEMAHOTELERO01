@@ -37,6 +37,7 @@ app.post('/api/reservar', (req, res) => {
   const { vivienda, habitacion, cama, nombre } = req.body;  
   const habKey = String(habitacion); 
   const camaKey = String(cama);
+
   const data = loadData();  
   
   // 1. Si no existe la vivienda, la creamos  
@@ -62,6 +63,7 @@ app.post('/api/liberar', (req, res) => {
   const { password, vivienda, habitacion, cama } = req.body;  
   const habKey = String(habitacion); 
   const camaKey = String(cama);
+
   const data = loadData();  
   
   // Si usas password, descomenta esta línea  

@@ -2,14 +2,13 @@ const PASSWORD = 'incarail789';
 let currentData = {};  
 let currentVivienda = '';  
 let currentHabitacion = '';  
-let currentCamaIndex = null;  
+let currentCamaKey = null; // CAMBIO 1: era currentCamaIndex  
   
 const showScreen = (id) => {  
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));  
     document.getElementById(id).classList.add('active');  
 }  
   
-// 1. Cargar datos del servidor cada 5 seg para multi-usuario  
 async function loadData() {  
     try {  
         const res = await fetch('/api/data');  
@@ -23,29 +22,32 @@ async function loadData() {
 // 2. Pintar habitaciones: Verde=Libre, Amarillo=Parcial, Rojo=Llena  
 function updateRoomColors() {  
     ['calicanto', 'andenes'].forEach(vivienda => {  
+        if (!currentData[vivienda]) return; // CAMBIO: validar que exista  
         Object.keys(currentData[vivienda]).forEach(hab => {  
             const btn = document.querySelector(`#${vivienda}-rooms.room-btn[data-hab="${hab}"]`);  
             if (btn) {  
-                const camas = currentData[vivienda][hab];  
-                const ocupadas = camas.filter(c => c!== null).length;  
-                const total = camas.length;  
+                const camasObj = currentData[vivienda][hab] || {}; // CAMBIO: ahora es objeto  
+                const camasKeys = Object.keys(camasObj);  
+                const ocupadas = camasKeys.filter(key => camasObj[key]!== null).length; // CAMBIO  
+                const total = camasKeys.length > 0? camasKeys.length : 3; // Si no hay camas, asume 3  
+  
                 btn.classList.remove('full', 'partial');  
-                if (ocupadas === total) btn.classList.add('full');  
+                if (ocupadas === total && total > 0) btn.classList.add('full');  
                 else if (ocupadas > 0) btn.classList.add('partial');  
+                // CAMBIO: Si ocupadas = 0, queda sin clase = verde/libre  
             }  
         });  
     });  
 }  
   
-// 3. Ir a menú de habitaciones  
 function goToRooms(vivienda) {  
     currentVivienda = vivienda;  
     document.getElementById('vivienda-title').innerText = vivienda.toUpperCase();  
     showScreen('rooms-menu');  
-    loadData(); // Actualizar colores al entrar  
+    loadData();  
 }  
   
-// 4. Abrir modal de habitación - SIEMPRE permite entrar aunque esté parcial  
+// 4. Abrir modal de habitación - SIEMPRE permite entrar  
 function openRoom(habitacion) {  
     currentHabitacion = habitacion;  
     document.getElementById('room-title').innerText = `${currentVivienda.toUpperCase()} - HABITACION ${habitacion}`;  
@@ -53,46 +55,55 @@ function openRoom(habitacion) {
     const bedsContainer = document.getElementById('beds-container');  
     bedsContainer.innerHTML = '';  
   
-    currentData[currentVivienda][habitacion].forEach((cama, index) => {  
+    const camasObj = currentData[currentVivienda][habitacion] || {}; // CAMBIO  
+  
+    // CAMBIO: Vamos a mostrar Cama 1, 2, 3 siempre  
+    for (let i = 1; i <= 3; i++) {  
+        const camaKey = String(i);  
+        const cama = camasObj[camaKey]; // CAMBIO: accede por key  
+  
         const bedDiv = document.createElement('div');  
         bedDiv.className = 'bed';  
-        bedDiv.innerText = `CAMA ${index + 1}`;  
-        if (cama!== null) {  
-            bedDiv.classList.add(cama.sexo === 'M'? 'ocupada-m' : 'ocupada-f');  
-            bedDiv.title = `${cama.nombre} - DNI: ${cama.dni} - ${cama.dias} días`;  
+        bedDiv.innerText = `CAMA ${i}`;  
+        if (cama!== null && cama!== undefined) { // CAMBIO  
+            bedDiv.classList.add('ocupada'); // Usa 1 sola clase  
+            bedDiv.title = `${cama.nombre} - ${new Date(cama.fecha).toLocaleDateString()}`;  
         } else {  
-            bedDiv.onclick = () => showReservaForm(index);  
+            bedDiv.onclick = () => showReservaForm(camaKey); // CAMBIO: pasa la key "1", "2", "3"  
         }  
         bedsContainer.appendChild(bedDiv);  
-    });  
+    }  
     showScreen('room-modal');  
 }  
   
-// 5. Mostrar formulario de reserva  
-function showReservaForm(camaIndex) {  
-    currentCamaIndex = camaIndex;  
+function showReservaForm(camaKey) { // CAMBIO: era camaIndex  
+    currentCamaKey = camaKey; // CAMBIO  
     document.getElementById('reserva-form').reset();  
     showScreen('reserva-form-screen');  
 }  
   
-// 6. Reservar cama - Se guarda en servidor para todos  
+// 6. Reservar cama - Backend nuevo pide {nombre}, no {cliente}  
 async function reservarCama() {  
     const nombre = document.getElementById('nombre').value.trim();  
-    const sexo = document.getElementById('sexo').value;  
-    const dni = document.getElementById('dni').value.trim();  
-    const dias = document.getElementById('dias').value;  
+    // const sexo = document.getElementById('sexo').value; // Ya no se usa en backend  
+    // const dni = document.getElementById('dni').value.trim();  
+    // const dias = document.getElementById('dias').value;  
   
-    if (!nombre ||!dni ||!dias) {  
-        alert('Completa todos los campos');  
+    if (!nombre) { // CAMBIO: solo pide nombre ahora  
+        alert('Completa el nombre');  
         return;  
     }  
   
-    const cliente = { nombre, sexo, dni, dias: parseInt(dias), fecha: new Date().toISOString() };  
-  
+    // CAMBIO: Ya no mandamos "cliente", mandamos "nombre" directo como pide tu backend  
     const res = await fetch('/api/reservar', {  
         method: 'POST',  
         headers: {'Content-Type': 'application/json'},  
-        body: JSON.stringify({ vivienda: currentVivienda, habitacion: currentHabitacion, cama: currentCamaIndex, cliente })  
+        body: JSON.stringify({  
+            vivienda: currentVivienda,  
+            habitacion: currentHabitacion,  
+            cama: currentCamaKey, // "1", "2", "3"  
+            nombre: nombre // CAMBIO  
+        })  
     });  
   
     const data = await res.json();  
@@ -100,24 +111,21 @@ async function reservarCama() {
         alert('Reserva exitosa');  
         await loadData();  
         showScreen('rooms-menu');  
-        openRoom(currentHabitacion); // Recargar modal para ver cama ocupada  
+        openRoom(currentHabitacion);  
     } else {  
         alert(data.msg);  
         await loadData();  
     }  
 }  
   
-// 7. Volver al menú principal  
 function backToMain() {  
     showScreen('main-menu');  
 }  
   
-// 8. Volver a lista de habitaciones  
 function backToRooms() {  
     showScreen('rooms-menu');  
 }  
   
-// 9. REPORTES - Con la misma contraseña de siempre: incarail789  
 async function openReportes() {  
     const password = prompt('Ingresa password para REPORTES:');  
     if (password!== PASSWORD) {  
@@ -131,15 +139,18 @@ async function openReportes() {
   
     let hayOcupadas = false;  
     ['calicanto', 'andenes'].forEach(vivienda => {  
+        if (!currentData[vivienda]) return;  
         Object.keys(currentData[vivienda]).forEach(hab => {  
-            currentData[vivienda][hab].forEach((cama, index) => {  
+            const camasObj = currentData[vivienda][hab] || {}; // CAMBIO  
+            Object.keys(camasObj).forEach(camaKey => { // CAMBIO  
+                const cama = camasObj[camaKey];  
                 if (cama!== null) {  
                     hayOcupadas = true;  
                     const item = document.createElement('div');  
                     item.className = 'reporte-item';  
                     item.innerHTML = `  
-                        <span>${vivienda.toUpperCase()} HAB ${hab} - CAMA ${index + 1}: ${cama.nombre} DNI:${cama.dni}</span>  
-                        <button onclick="liberarCama('${vivienda}', '${hab}', ${index}, '${PASSWORD}')">Liberar</button>  
+                        <span>${vivienda.toUpperCase()} HAB ${hab} - CAMA ${camaKey}: ${cama.nombre}</span>  
+                        <button onclick="liberarCama('${vivienda}', '${hab}', '${camaKey}', '${PASSWORD}')">Liberar</button>  
                     `;  
                     reportesContainer.appendChild(item);  
                 }  
@@ -151,27 +162,25 @@ async function openReportes() {
     showScreen('reportes-screen');  
 }  
   
-// 10. Liberar cama desde REPORTES  
 async function liberarCama(vivienda, habitacion, cama, password) {  
     if (!confirm('¿Seguro que deseas liberar esta cama?')) return;  
   
     const res = await fetch('/api/liberar', {  
         method: 'POST',  
         headers: {'Content-Type': 'application/json'},  
-        body: JSON.stringify({ password, vivienda, habitacion, cama })  
+        body: JSON.stringify({ password, vivienda, habitacion, cama }) // cama ya es "1", "2", "3"  
     });  
   
     const data = await res.json();  
     if (data.ok) {  
         alert('Cama liberada');  
-        openReportes(); // Recargar reportes  
+        openReportes();  
     } else {  
         alert(data.msg);  
     }  
 }  
   
-// Iniciar  
 document.addEventListener('DOMContentLoaded', () => {  
     loadData();  
-    setInterval(loadData, 5000); // Actualizar cada 5 seg para que todos vean los cambios  
+    setInterval(loadData, 5000);  
 });  
