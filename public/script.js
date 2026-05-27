@@ -1,118 +1,209 @@
-const CLAVE = 'incarail789';  
-const VIVIENDAS = {  
-  CALICANTO: [5, 10, 11, 19, 21, 22, 23],  
-  ANDENES: [34, 35, 38, 39]  
+// CONFIGURACIÓN INICIAL  
+const CONFIG = {  
+  password: 'incarail789',  
+  viviendas: {  
+    CALICANTO: ['HABITACION 5', 'HABITACION 10', 'HABITACION 11', 'HABITACION 19', 'HABITACION 21', 'HABITACION 22', 'HABITACION 23'],  
+    ANDENES: ['HABITACION 34', 'HABITACION 35', 'HABITACION 38', 'HABITACION 39']  
+  },  
+  camasPorHab: 3  
 };  
-let data = { reservas: [] };  
-let estado = {}; // vivienda, habitacion, cama  
   
-function entrar() {  
-  document.getElementById('intro').style.display = 'none';  
-  document.getElementById('main').style.display = 'block';  
-  cargarData();  
-}  
+// ESTADO GLOBAL  
+let datos = JSON.parse(localStorage.getItem('esab_datos')) || {};  
+let seleccionActual = { vivienda: '', habitacion: '', cama: null };  
   
-async function cargarData() {  
-  const res = await fetch('/api/reservas');  
-  data = await res.json();  
-}  
+// BLOC DE NOTAS AISLADO  
+const BlocNotas = (() => {  
+  const textarea = document.getElementById('notaTexto');  
+  const clave = 'esab_bloc_notas';  
   
-function cerrarModal() {  
-  document.getElementById('modal').style.display = 'none';  
-  document.getElementById('overlay').style.display = 'none';  
-  cargarData().then(() => {});  
-}  
+  textarea.value = localStorage.getItem(clave) || '';  
+  textarea.addEventListener('input', () => {  
+    localStorage.setItem(clave, textarea.value);  
+  });  
+})();  
   
+// UTILIDADES  
+const guardarDatos = () => localStorage.setItem('esab_datos', JSON.stringify(datos));  
+const $ = id => document.getElementById(id);  
+  
+// 1. INTRO  
+$('btnIngresar').addEventListener('click', () => {  
+  $('intro').classList.add('oculto');  
+  $('main').classList.remove('oculto');  
+});  
+  
+// 2. MENU PRINCIPAL  
+$('btnCalicanto').addEventListener('click', () => abrirVivienda('CALICANTO'));  
+$('btnAndenes').addEventListener('click', () => abrirVivienda('ANDENES'));  
+$('btnReportes').addEventListener('click', solicitarPassword);  
+  
+// 3. ABRIR VIVIENDA  
 function abrirVivienda(vivienda) {  
-  estado.vivienda = vivienda;  
-  let html = `<button class="cerrar" onclick="cerrarModal()">X</button><h2>${vivienda}</h2><div>`;  
-  VIVIENDAS[vivienda].forEach(hab => {  
-    const ocupadas = data.reservas.filter(r => r.vivienda === vivienda && r.habitacion == hab);  
-    let clase = 'disponible';  
-    if (ocupadas.length > 0) clase = ocupadas[0].sexo === 'M' ? 'ocupado-m' : 'ocupado-f';  
-    html += `<div class="habitacion ${clase}" onclick="abrirCuarto(${hab})">HAB ${hab}</div>`;  
+  seleccionActual.vivienda = vivienda;  
+  $('tituloVivienda').textContent = vivienda;  
+  
+  const contenedor = $('listaHabitaciones');  
+  contenedor.innerHTML = '';  
+  
+  CONFIG.viviendas[vivienda].forEach(hab => {  
+    const btn = document.createElement('button');  
+    btn.className = 'btn-habitacion';  
+    btn.textContent = hab;  
+  
+    const estado = obtenerEstadoHabitacion(vivienda, hab);  
+    if (estado.ocupada) {  
+      btn.classList.add('ocupada');  
+      btn.classList.add(estado.sexo === 'M'? 'hombre' : 'mujer');  
+      btn.disabled = true;  
+    }  
+  
+    btn.addEventListener('click', () => abrirCuarto(hab));  
+    contenedor.appendChild(btn);  
   });  
-  html += '</div>';  
-  mostrarModal(html);  
+  
+  $('modalVivienda').classList.remove('oculto');  
 }  
   
+$('cerrarVivienda').addEventListener('click', () => $('modalVivienda').classList.add('oculto'));  
+  
+// 4. ABRIR CUARTO 2D  
 function abrirCuarto(habitacion) {  
-  estado.habitacion = habitacion;  
-  let html = `<button class="cerrar" onclick="abrirVivienda('${estado.vivienda}')">Volver</button><h2>HAB ${habitacion}</h2>`;  
-  html += '<div class="cuarto-2d">';  
-  for (let i = 1; i <= 3; i++) {  
-    const ocupada = data.reservas.find(r => r.vivienda === estado.vivienda && r.habitacion == habitacion && r.cama == i);  
-    html += `<div class="cama ${ocupada ? 'ocupada' : ''}" onclick="seleccionarCama(${i})">${i}</div>`;  
+  seleccionActual.habitacion = habitacion;  
+  $('tituloCuarto').textContent = `${seleccionActual.vivienda} - ${habitacion}`;  
+  
+  const contenedor = $('cuarto2D');  
+  contenedor.innerHTML = '';  
+  
+  for (let i = 1; i <= CONFIG.camasPorHab; i++) {  
+    const camaDiv = document.createElement('div');  
+    camaDiv.className = 'cama';  
+  
+    const ocupada = estaCamaOcupada(seleccionActual.vivienda, habitacion, i);  
+    if (ocupada) camaDiv.classList.add('ocupada');  
+  
+    camaDiv.innerHTML = `  
+      <h4>CAMA ${i}</h4>  
+      <input type="checkbox" id="cama${i}" ${ocupada? 'disabled' : ''}>  
+    `;  
+  
+    if (!ocupada) {  
+      camaDiv.addEventListener('click', () => seleccionarCama(i));  
+    }  
+  
+    contenedor.appendChild(camaDiv);  
   }  
-  html += '</div>';  
-  mostrarModal(html);  
+  
+  $('modalCuarto').classList.remove('oculto');  
 }  
   
-function seleccionarCama(cama) {  
-  estado.cama = cama;  
-  const html = `  
-    <button class="cerrar" onclick="abrirCuarto(${estado.habitacion})">Volver</button>  
-    <h2>Reservar HAB ${estado.habitacion} Cama ${cama}</h2>  
-    <div class="form-reserva">  
-      <input id="nombre" placeholder="NOMBRE COMPLETO" required>  
-      <select id="sexo"><option value="">SEXO</option><option value="M">M - MASCULINO</option><option value="F">F - FEMENINO</option></select>  
-      <input id="dni" placeholder="DNI" required>  
-      <input id="dias" type="number" placeholder="CUANTOS DIAS" required>  
-      <button onclick="guardarReserva()">GUARDAR</button>  
-    </div>`;  
-  mostrarModal(html);  
+$('cerrarCuarto').addEventListener('click', () => $('modalCuarto').classList.add('oculto'));  
+  
+function seleccionarCama(numCama) {  
+  seleccionActual.cama = numCama;  
+  $('modalCuarto').classList.add('oculto');  
+  $('modalFormulario').classList.remove('oculto');  
+  $('formRegistro').reset();  
 }  
   
-async function guardarReserva() {  
-  const nombre = document.getElementById('nombre').value;  
-  const sexo = document.getElementById('sexo').value;  
-  const dni = document.getElementById('dni').value;  
-  const dias = document.getElementById('dias').value;  
-  if (!nombre || !sexo || !dni || !dias) return alert('Completa todos los campos');  
+$('cerrarFormulario').addEventListener('click', () => $('modalFormulario').classList.add('oculto'));  
   
-  const res = await fetch('/api/reservar', {  
-    method: 'POST',  
-    headers: {'Content-Type': 'application/json'},  
-    body: JSON.stringify({...estado, nombre, sexo, dni, dias})  
-  });  
-  const r = await res.json();  
-  if (r.error) return alert(r.error);  
-  alert('Reservado');  
-  cerrarModal();  
+// 5. GUARDAR REGISTRO  
+$('formRegistro').addEventListener('submit', e => {  
+  e.preventDefault();  
+  
+  const registro = {  
+    nombre: $('nombreCompleto').value.toUpperCase(),  
+    sexo: $('sexo').value,  
+    dni: $('dni').value,  
+    dias: $('dias').value,  
+    vivienda: seleccionActual.vivienda,  
+    habitacion: seleccionActual.habitacion,  
+    cama: seleccionActual.cama,  
+    fecha: new Date().toISOString()  
+  };  
+  
+  const key = `${seleccionActual.vivienda}_${seleccionActual.habitacion}_CAMA${seleccionActual.cama}`;  
+  datos[key] = registro;  
+  guardarDatos();  
+  
+  $('modalFormulario').classList.add('oculto');  
+  alert('Registro guardado correctamente');  
+  abrirVivienda(seleccionActual.vivienda);  
+});  
+  
+// 6. REPORTES CON PASSWORD  
+function solicitarPassword() {  
+  const pass = prompt('Ingrese contraseña para acceder a REPORTES:');  
+  if (pass === CONFIG.password) {  
+    mostrarReportes();  
+  } else if (pass!== null) {  
+    alert('Contraseña incorrecta');  
+  }  
 }  
   
-function abrirReportes() {  
-  const pass = prompt('Ingrese contraseña para ver Reportes:');  
-  if (pass !== CLAVE) return alert('Contraseña incorrecta');  
-    
-  let izq = '<h3>Todos los Registros</h3>';  
-  let der = '<h3>Liberar Camas</h3>';  
-  if (data.reservas.length === 0) {  
-    izq += '<p>No hay registros</p>';  
-    der += '<p>No hay registros</p>';  
+function mostrarReportes() {  
+  const listaCompleta = $('listaCompleta');  
+  const listaLiberar = $('listaLiberar');  
+  
+  listaCompleta.innerHTML = '';  
+  listaLiberar.innerHTML = '';  
+  
+  const registros = Object.values(datos);  
+  
+  if (registros.length === 0) {  
+    listaCompleta.innerHTML = '<p>No hay registros</p>';  
+    listaLiberar.innerHTML = '<p>No hay registros</p>';  
   } else {  
-    data.reservas.forEach(r => {  
-      izq += `<p>${r.nombre} - HAB ${r.habitacion} - ${r.vivienda} - cama ${r.cama}</p>`;  
-      der += `<div class="item-reporte">${r.nombre} - ${r.vivienda} - HAB ${r.habitacion} <button onclick="liberar('${r.vivienda}',${r.habitacion},${r.cama})">Liberar</button></div>`;  
+    registros.forEach(reg => {  
+      // Izquierda: Detalle completo  
+      const item1 = document.createElement('div');  
+      item1.className = 'item-reporte';  
+      item1.textContent = `${reg.nombre} - ${reg.habitacion} - ${reg.vivienda} - CAMA ${reg.cama}`;  
+      listaCompleta.appendChild(item1);  
+  
+      // Derecha: Con botón liberar  
+      const item2 = document.createElement('div');  
+      item2.className = 'item-reporte';  
+      item2.innerHTML = `  
+        <span>${reg.nombre} - ${reg.vivienda} - ${reg.habitacion}</span>  
+        <button class="btn-liberar" data-key="${reg.vivienda}_${reg.habitacion}_CAMA${reg.cama}">LIBERAR</button>  
+      `;  
+      listaLiberar.appendChild(item2);  
+    });  
+  
+    // Eventos liberar  
+    document.querySelectorAll('.btn-liberar').forEach(btn => {  
+      btn.addEventListener('click', e => {  
+        const key = e.target.dataset.key;  
+        if (confirm('¿Seguro que desea liberar esta habitación?')) {  
+          delete datos[key];  
+          guardarDatos();  
+          mostrarReportes();  
+          abrirVivienda(seleccionActual.vivienda);  
+        }  
+      });  
     });  
   }  
-  const html = `<button class="cerrar" onclick="cerrarModal()">X</button><h2>REPORTES</h2><div class="reportes-split"><div class="reportes-col">${izq}</div><div class="reportes-col">${der}</div></div>`;  
-  mostrarModal(html);  
+  
+  $('modalReportes').classList.remove('oculto');  
 }  
   
-async function liberar(vivienda, habitacion, cama) {  
-  if (!confirm('¿Liberar esta cama?')) return;  
-  await fetch('/api/liberar', {  
-    method: 'POST',  
-    headers: {'Content-Type': 'application/json'},  
-    body: JSON.stringify({vivienda, habitacion, cama})  
-  });  
-  await cargarData();  
-  abrirReportes();  
+$('cerrarReportes').addEventListener('click', () => $('modalReportes').classList.add('oculto'));  
+  
+// 7. LÓGICA DE OCUPACIÓN  
+function obtenerEstadoHabitacion(vivienda, habitacion) {  
+  const camasOcupadas = [];  
+  for (let i = 1; i <= CONFIG.camasPorHab; i++) {  
+    const key = `${vivienda}_${habitacion}_CAMA${i}`;  
+    if (datos[key]) camasOcupadas.push(datos[key]);  
+  }  
+  
+  if (camasOcupadas.length === 0) return { ocupada: false };  
+  return { ocupada: true, sexo: camasOcupadas[0].sexo };  
 }  
   
-function mostrarModal(html) {  
-  document.getElementById('modal').innerHTML = html;  
-  document.getElementById('modal').style.display = 'block';  
-  document.getElementById('overlay').style.display = 'block';  
+function estaCamaOcupada(vivienda, habitacion, cama) {  
+  const key = `${vivienda}_${habitacion}_CAMA${cama}`;  
+  return!!datos[key];  
 }  
