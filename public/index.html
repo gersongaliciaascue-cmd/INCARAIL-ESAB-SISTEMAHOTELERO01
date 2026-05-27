@@ -4,148 +4,77 @@
   <meta charset="UTF-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">  
   <title>INCA RAIL ESAB</title>  
-  <link rel="preconnect" href="https://fonts.googleapis.com">  
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">  
-  <link rel="stylesheet" href="/style.css">  
+  <link rel="stylesheet" href="style.css">  
+  <link href="https://fonts.googleapis.com/css2?family=Baskervville&display=swap" rel="stylesheet">  
 </head>  
 <body>  
-  <!-- 1. PANTALLA DE INTRO CON LLAMA CAMINANDO -->  
-  <div id="intro" class="intro">  
-    <div class="llama-container">  
-      <svg class="llama" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">  
-        <defs>  
-          <linearGradient id="llamaGrad" x1="0%" y1="0%" x2="100%" y2="100%">  
-            <stop offset="0%" style="stop-color:#f5e6c8;stop-opacity:1" />  
-            <stop offset="100%" style="stop-color:#d2b48c;stop-opacity:1" />  
-          </linearGradient>  
-        </defs>  
-        <!-- Cuerpo -->  
-        <ellipse cx="100" cy="90" rx="45" ry="30" fill="url(#llamaGrad)"/>  
-        <!-- Cuello -->  
-        <path d="M 110 70 Q 115 40 125 35" stroke="url(#llamaGrad)" stroke-width="18" fill="none" stroke-linecap="round"/>  
-        <!-- Cabeza -->  
-        <circle cx="130" cy="30" r="15" fill="url(#llamaGrad)"/>  
-        <!-- Orejas -->  
-        <path d="M 125 20 L 122 10 M 135 20 L 138 10" stroke="#8b6f47" stroke-width="3" stroke-linecap="round"/>  
-        <!-- Ojo -->  
-        <circle cx="133" cy="28" r="2" fill="#333"/>  
-        <!-- Patas con animación -->  
-        <g class="patas">  
-          <path d="M 80 110 L 80 125" stroke="#8b6f47" stroke-width="6" stroke-linecap="round">  
-            <animate attributeName="d" dur="0.6s" repeatCount="indefinite"  
-              values="M 80 110 L 80 125; M 80 110 L 78 125; M 80 110 L 80 125"/>  
-          </path>  
-          <path d="M 95 110 L 95 125" stroke="#8b6f47" stroke-width="6" stroke-linecap="round">  
-            <animate attributeName="d" dur="0.6s" begin="0.3s" repeatCount="indefinite"  
-              values="M 95 110 L 95 125; M 95 110 L 97 125; M 95 110 L 95 125"/>  
-          </path>  
-          <path d="M 115 110 L 115 125" stroke="#8b6f47" stroke-width="6" stroke-linecap="round">  
-            <animate attributeName="d" dur="0.6s" repeatCount="indefinite"  
-              values="M 115 110 L 115 125; M 115 110 L 117 125; M 115 110 L 115 125"/>  
-          </path>  
-          <path d="M 130 110 L 130 125" stroke="#8b6f47" stroke-width="6" stroke-linecap="round">  
-            <animate attributeName="d" dur="0.6s" begin="0.3s" repeatCount="indefinite"  
-              values="M 130 110 L 130 125; M 130 110 L 128 125; M 130 110 L 130 125"/>  
-          </path>  
-        </g>  
-        <!-- Cola -->  
-        <path d="M 60 85 Q 50 80 52 70" stroke="url(#llamaGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>  
-      </svg>  
-      <h2>Bienvenido a ESAB</h2>  
-    </div>  
-    <button id="btnIngresar" class="btn-ingresar">Ingresar</button>  
+  <!-- Animación Llama al inicio -->  
+  <div id="llama-loader">  
+    <div class="llama"></div>  
   </div>  
   
-  <!-- 2. PANTALLA PRINCIPAL -->  
-  <main id="main" class="main oculto">  
-    <header>  
-      <h1>INCA RAIL ESAB</h1>  
-    </header>  
+  <div id="app" class="hidden">  
+    <h1>INCA RAIL ESAB</h1>  
+    <div class="fondo-machu"></div>  
   
-    <div class="contenedor-principal">  
-      <div class="menu-opciones">  
-        <div class="card" id="btnCalicanto">  
-          <span>VIVIENDA CALICANTO</span>  
-        </div>  
-        <div class="card" id="btnAndenes">  
-          <span>VIVIENDA ANDENES</span>  
-        </div>  
-        <div class="card card-rectangular" id="btnReportes">  
-          <span>REPORTES</span>  
-        </div>  
-      </div>  
-  
-      <!-- BLOC DE NOTAS AISLADO -->  
-      <div id="blocNotas" class="bloc-notas">  
-        <h3>Bloc de Notas</h3>  
-        <textarea id="notaTexto" placeholder="Escribe aquí..."></textarea>  
-      </div>  
+    <div class="menu-principal">  
+      <button id="btn-calicanto">CALICANTO</button>  
+      <button id="btn-andenes">ANDENES</button>  
+      <button id="btn-reportes">REPORTES DE HAB</button>  
     </div>  
   
-    <footer>  
-      <div class="pareja-machu">  
-        <div class="persona hombre"></div>  
-        <div class="persona mujer"></div>  
-      </div>  
-    </footer>  
-  </main>  
+    <!-- Cuadro aislado para uso futuro - Bloc de notas -->  
+    <div id="bloc-notas">  
+      <h3>BLOC DE NOTAS</h3>  
+      <textarea placeholder="Escribe aquí... código aislado"></textarea>  
+    </div>  
+    <div class="version-box">1°</div>  
+  </div>  
   
-  <!-- 3. MODAL VIVIENDA -->  
-  <div id="modalVivienda" class="modal oculto">  
-    <div class="modal-contenido">  
-      <button class="btn-cerrar" id="cerrarVivienda">&times;</button>  
-      <h2 id="tituloVivienda"></h2>  
-      <div id="listaHabitaciones" class="lista-habitaciones"></div>  
+  <!-- Modal: Lista de Habitaciones -->  
+  <div id="modal-habs" class="modal hidden">  
+    <div class="modal-content">  
+      <span class="close">&times;</span>  
+      <h2 id="modal-titulo"></h2>  
+      <div id="lista-habs"></div>  
     </div>  
   </div>  
   
-  <!-- 4. MODAL CUARTO 2D -->  
-  <div id="modalCuarto" class="modal oculto">  
-    <div class="modal-contenido cuarto-contenido">  
-      <button class="btn-cerrar" id="cerrarCuarto">&times;</button>  
-      <h3 id="tituloCuarto"></h3>  
-      <div id="cuarto2D" class="cuarto-2d"></div>  
-    </div>  
-  </div>  
-  
-  <!-- 5. MODAL FORMULARIO -->  
-  <div id="modalFormulario" class="modal oculto">  
-    <div class="modal-contenido form-contenido">  
-      <button class="btn-cerrar" id="cerrarFormulario">&times;</button>  
-      <h3>Registrar Ocupante</h3>  
-      <form id="formRegistro">  
-        <input type="text" id="nombreCompleto" placeholder="NOMBRE COMPLETO" required>  
+  <!-- Modal: Vista de Cuarto 2D + Formulario -->  
+  <div id="modal-cuarto" class="modal hidden">  
+    <div class="modal-content grande">  
+      <span class="close">&times;</span>  
+      <div id="vista-2d"></div>  
+      <form id="form-reserva" class="hidden">  
+        <input type="text" id="nombre" placeholder="NOMBRE COMPLETO" required>  
         <select id="sexo" required>  
           <option value="">SEXO</option>  
-          <option value="M">M - MASCULINO</option>  
-          <option value="F">F - FEMENINO</option>  
+          <option value="M">MASCULINO</option>  
+          <option value="F">FEMENINO</option>  
         </select>  
-        <input type="text" id="dni" placeholder="DNI" required pattern="[0-9]{8}">  
-        <input type="number" id="dias" placeholder="DÍAS" required min="1">  
-        <button type="submit" class="btn-guardar">GUARDAR</button>  
+        <input type="text" id="dni" placeholder="DNI" required>  
+        <input type="number" id="dias" placeholder="DIAS" required>  
+        <button type="submit">GUARDAR</button>  
       </form>  
     </div>  
   </div>  
   
-  <!-- 6. MODAL REPORTES -->  
-  <div id="modalReportes" class="modal oculto">  
-    <div class="modal-contenido reportes-contenido">  
-      <button class="btn-cerrar" id="cerrarReportes">&times;</button>  
+  <!-- Modal: Reportes -->  
+  <div id="modal-reportes" class="modal hidden">  
+    <div class="modal-content reportes">  
+      <span class="close">&times;</span>  
       <h2>REPORTES</h2>  
-      <div class="reportes-grid">  
-        <div class="reportes-izquierda">  
-          <h4>Todos los Registros</h4>  
-          <div id="listaCompleta"></div>  
-        </div>  
-        <div class="reportes-derecha">  
-          <h4>Liberar Habitación</h4>  
-          <div id="listaLiberar"></div>  
-        </div>  
+      <div id="pass-container">  
+        <input type="password" id="pass-reportes" placeholder="Contraseña">  
+        <button id="btn-pass">Entrar</button>  
+      </div>  
+      <div id="reportes-content" class="hidden">  
+        <div class="reportes-col" id="reportes-izq"></div>  
+        <div class="reportes-col" id="reportes-der"></div>  
       </div>  
     </div>  
   </div>  
   
-  <script src="/script.js"></script>  
+  <script src="script.js"></script>  
 </body>  
 </html>  

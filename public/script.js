@@ -1,189 +1,171 @@
-const PASSWORD = 'incarail789';  
 let currentData = {};  
 let currentVivienda = '';  
 let currentHabitacion = '';  
-let currentCamaKey = null; // CAMBIO 1: era currentCamaIndex  
-  
-const showScreen = (id) => {  
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));  
-    document.getElementById(id).classList.add('active');  
-}  
-  
-async function loadData() {  
-    try {  
-        const res = await fetch('/api/data');  
-        currentData = await res.json();  
-        updateRoomColors();  
-    } catch (e) {  
-        console.error('Error cargando datos:', e);  
-    }  
-}  
-  
-// 2. Pintar habitaciones: Verde=Libre, Amarillo=Parcial, Rojo=Llena  
-function updateRoomColors() {
-    ['calicanto', 'andenes'].forEach(vivienda => {
-        if (!currentData[vivienda]) return;
-        Object.keys(currentData[vivienda]).forEach(hab => {
-            const btn = document.querySelector(#${vivienda}-rooms.room-btn[data-hab="${hab}"]);
-            if (btn) {
-                const camasObj = currentData[vivienda][hab] || {};
-
-                let ocupadas = 0;
-                for (let i = 1; i <= 3; i++) {
-                    if (camasObj[String(i)]!= null) ocupadas++;
-                }
-
-                const total = 3; // Siempre son 3 camas por habitación
-
-                btn.classList.remove('full', 'partial');
-                if (ocupadas === total) btn.classList.add('full');
-                else if (ocupadas > 0) btn.classList.add('partial');
-            }
-        });
-    });
-} 
-  
-function goToRooms(vivienda) {  
-    currentVivienda = vivienda;  
-    document.getElementById('vivienda-title').innerText = vivienda.toUpperCase();  
-    showScreen('rooms-menu');  
-    loadData();  
-}  
-  
-// 4. Abrir modal de habitación - SIEMPRE permite entrar  
-function openRoom(habitacion) {  
-    currentHabitacion = habitacion;  
-    document.getElementById('room-title').innerText = `${currentVivienda.toUpperCase()} - HABITACION ${habitacion}`;  
-  
-    const bedsContainer = document.getElementById('beds-container');  
-    bedsContainer.innerHTML = '';  
-  
-    const camasObj = currentData[currentVivienda][habitacion] || {}; // CAMBIO  
-  
-    // CAMBIO: Vamos a mostrar Cama 1, 2, 3 siempre  
-    for (ley i = 1; i <= 3; i++) {  
-        const camaKey = String(i);  
-        const cama = camasObj[camaKey]; // CAMBIO: accede por key  
-  
-        const bedDiv = document.createElement('div');  
-        bedDiv.className = 'bed';  
-        bedDiv.innerText = `CAMA ${i}`;  
-        if (cama!== null && cama!== undefined) { // CAMBIO  
-            bedDiv.classList.add('ocupada'); // Usa 1 sola clase  
-            bedDiv.title = `${cama.nombre} - ${new Date(cama.fecha).toLocaleDateString()}`;  
-        } else {  
-            bedDiv.onclick = () => showReservaForm(camaKey); // CAMBIO: pasa la key "1", "2", "3"  
-        }  
-        bedsContainer.appendChild(bedDiv);  
-    }  
-    showScreen('room-modal');  
-}  
-  
-function showReservaForm(camaKey) { // CAMBIO: era camaIndex  
-    currentCamaKey = camaKey; // CAMBIO  
-    document.getElementById('reserva-form').reset();  
-    showScreen('reserva-form-screen');  
-}  
-  
-// 6. Reservar cama - Backend nuevo pide {nombre}, no {cliente}  
-async function reservarCama() {  
-    const nombre = document.getElementById('nombre').value.trim();  
-    // const sexo = document.getElementById('sexo').value; // Ya no se usa en backend  
-    // const dni = document.getElementById('dni').value.trim();  
-    // const dias = document.getElementById('dias').value;  
-  
-    if (!nombre) { // CAMBIO: solo pide nombre ahora  
-        alert('Completa el nombre');  
-        return;  
-    }  
-  
-    // CAMBIO: Ya no mandamos "cliente", mandamos "nombre" directo como pide tu backend  
-    const res = await fetch('/api/reservar', {  
-        method: 'POST',  
-        headers: {'Content-Type': 'application/json'},  
-        body: JSON.stringify({  
-            vivienda: currentVivienda,  
-            habitacion: currentHabitacion,  
-            cama: currentCamaKey, // "1", "2", "3"  
-            nombre: nombre // CAMBIO  
-        })  
-    });  
-  
-    const data = await res.json();  
-    if (data.ok) {  
-        alert('Reserva exitosa');  
-        await loadData();  
-        showScreen('rooms-menu');  
-        openRoom(currentHabitacion);  
-    } else {  
-        alert(data.msg);  
-        await loadData();  
-    }  
-}  
-  
-function backToMain() {  
-    showScreen('main-menu');  
-}  
-  
-function backToRooms() {  
-    showScreen('rooms-menu');  
-}  
-  
-async function openReportes() {  
-    const password = prompt('Ingresa password para REPORTES:');  
-    if (password!== PASSWORD) {  
-        alert('Password incorrecto');  
-        return;  
-    }  
-  
-    await loadData();  
-    const reportesContainer = document.getElementById('reportes-container');  
-    reportesContainer.innerHTML = '';  
-  
-    let hayOcupadas = false;  
-    ['calicanto', 'andenes'].forEach(vivienda => {  
-        if (!currentData[vivienda]) return;  
-        Object.keys(currentData[vivienda]).forEach(hab => {  
-            const camasObj = currentData[vivienda][hab] || {}; // CAMBIO  
-            Object.keys(camasObj).forEach(camaKey => { // CAMBIO  
-                const cama = camasObj[camaKey];  
-                if (cama!== null) {  
-                    hayOcupadas = true;  
-                    const item = document.createElement('div');  
-                    item.className = 'reporte-item';  
-                    item.innerHTML = `  
-                        <span>${vivienda.toUpperCase()} HAB ${hab} - CAMA ${camaKey}: ${cama.nombre}</span>  
-                        <button onclick="liberarCama('${vivienda}', '${hab}', '${camaKey}', '${PASSWORD}')">Liberar</button>  
-                    `;  
-                    reportesContainer.appendChild(item);  
-                }  
-            });  
-        });  
-    });  
-  
-    if (!hayOcupadas) reportesContainer.innerHTML = '<p>No hay camas ocupadas</p>';  
-    showScreen('reportes-screen');  
-}  
-  
-async function liberarCama(vivienda, habitacion, cama, password) {  
-    if (!confirm('¿Seguro que deseas liberar esta cama?')) return;  
-  
-    const res = await fetch('/api/liberar', {  
-        method: 'POST',  
-        headers: {'Content-Type': 'application/json'},  
-        body: JSON.stringify({ password, vivienda, habitacion, cama }) // cama ya es "1", "2", "3"  
-    });  
-  
-    const data = await res.json();  
-    if (data.ok) {  
-        alert('Cama liberada');  
-        openReportes();  
-    } else {  
-        alert(data.msg);  
-    }  
-}  
+let currentCama = '';  
+const PASS_REPORTES = 'incarail789';  
   
 document.addEventListener('DOMContentLoaded', () => {  
+  // Animación de llama 2 seg  
+  setTimeout(() => {  
+    document.getElementById('llama-loader').classList.add('hidden');  
+    document.getElementById('app').classList.remove('hidden');  
     loadData();  
-    setInterval(loadData, 5000);  
+  }, 2000);  
+  
+  // Eventos botones  
+  document.getElementById('btn-calicanto').onclick = () => openVivienda('calicanto');  
+  document.getElementById('btn-andenes').onclick = () => openVivienda('andenes');  
+  document.getElementById('btn-reportes').onclick = () => openReportes();  
+  document.querySelectorAll('.close').forEach(btn => btn.onclick = closeModals);  
+  document.getElementById('btn-pass').onclick = checkPass;  
+  document.getElementById('form-reserva').onsubmit = guardarReserva;  
 });  
+  
+async function loadData() {  
+  const res = await fetch('/api/data');  
+  currentData = await res.json();  
+  updateRoomColors();  
+}  
+  
+function updateRoomColors() {  
+  ['calicanto', 'andenes'].forEach(vivienda => {  
+    Object.keys(currentData[vivienda]).forEach(hab => {  
+      const btn = document.querySelector(`#btn-${vivienda}`);  
+      const camas = currentData[vivienda][hab];  
+      const ocupadas = Object.values(camas).filter(c => c!== null);  
+  
+      if (btn) {  
+        btn.classList.remove('habitacion-hombres', 'habitacion-mujeres');  
+        if (ocupadas.length > 0) {  
+          btn.classList.add(ocupadas[0].sexo === 'M'? 'habitacion-hombres' : 'habitacion-mujeres');  
+        }  
+      }  
+    });  
+  });  
+}  
+  
+function openVivienda(vivienda) {  
+  currentVivienda = vivienda;  
+  document.getElementById('modal-titulo').textContent = vivienda.toUpperCase();  
+  const lista = document.getElementById('lista-habs');  
+  lista.innerHTML = '';  
+  
+  Object.keys(currentData[vivienda]).forEach(hab => {  
+    const camas = currentData[vivienda][hab];  
+    const total = 3;  
+    const ocupadas = Object.keys(camas).length;  
+    const btn = document.createElement('button');  
+    btn.className = 'hab-btn ' + (ocupadas === total? 'ocupado' : 'disponible');  
+    btn.textContent = `HABITACION ${hab}`;  
+    btn.onclick = () => openCuarto(hab);  
+    lista.appendChild(btn);  
+  });  
+  
+  document.getElementById('modal-habs').classList.remove('hidden');  
+}  
+  
+function openCuarto(habitacion) {  
+  currentHabitacion = habitacion;  
+  document.getElementById('modal-habs').classList.add('hidden');  
+  const vista = document.getElementById('vista-2d');  
+  vista.innerHTML = '';  
+  const camas = currentData[currentVivienda][habitacion] || {};  
+  
+  for (let i = 1; i <= 3; i++) {  
+    const camaDiv = document.createElement('div');  
+    camaDiv.className = 'cama';  
+    camaDiv.innerHTML = `CAMA ${i}<br>${camas[i]? 'OCUPADA' : 'DISPONIBLE'}`;  
+    if (camas[i]) {  
+      camaDiv.classList.add('ocupada');  
+    } else {  
+      camaDiv.onclick = () => seleccionarCama(i, camaDiv);  
+    }  
+    vista.appendChild(camaDiv);  
+  }  
+  
+  document.getElementById('modal-cuarto').classList.remove('hidden');  
+}  
+  
+function seleccionarCama(cama, el) {  
+  document.querySelectorAll('.cama').forEach(c => c.classList.remove('seleccionada'));  
+  el.classList.add('seleccionada');  
+  currentCama = cama;  
+  document.getElementById('form-reserva').classList.remove('hidden');  
+}  
+  
+async function guardarReserva(e) {  
+  e.preventDefault();  
+  const body = {  
+    vivienda: currentVivienda,  
+    habitacion: currentHabitacion,  
+    cama: currentCama,  
+    nombre: document.getElementById('nombre').value,  
+    sexo: document.getElementById('sexo').value,  
+    dni: document.getElementById('dni').value,  
+    dias: document.getElementById('dias').value  
+  };  
+  
+  const res = await fetch('/api/reservar', {  
+    method: 'POST',  
+    headers: {'Content-Type': 'application/json'},  
+    body: JSON.stringify(body)  
+  });  
+  
+  if (res.ok) {  
+    alert('Reserva guardada');  
+    closeModals();  
+    loadData();  
+  } else {  
+    alert((await res.json()).error);  
+  }  
+}  
+  
+function openReportes() {  
+  document.getElementById('modal-reportes').classList.remove('hidden');  
+  document.getElementById('pass-container').classList.remove('hidden');  
+  document.getElementById('reportes-content').classList.add('hidden');  
+}  
+  
+function checkPass() {  
+  if (document.getElementById('pass-reportes').value === PASS_REPORTES) {  
+    document.getElementById('pass-container').classList.add('hidden');  
+    document.getElementById('reportes-content').classList.remove('hidden');  
+    renderReportes();  
+  } else {  
+    alert('Contraseña incorrecta');  
+  }  
+}  
+  
+function renderReportes() {  
+  const izq = document.getElementById('reportes-izq');  
+  const der = document.getElementById('reportes-der');  
+  izq.innerHTML = ''; der.innerHTML = '';  
+  
+  ['calicanto', 'andenes'].forEach(vivienda => {  
+    Object.keys(currentData[vivienda]).forEach(hab => {  
+      Object.keys(currentData[vivienda][hab]).forEach(cama => {  
+        const user = currentData[vivienda][hab][cama];  
+        const texto = `${user.nombre} - DNI:${user.dni} - ${user.sexo} - ${user.dias} dias - ${vivienda.toUpperCase()} - HAB ${hab} - CAMA ${cama}`;  
+  
+        izq.innerHTML += `<div class="reporte-item">${texto}</div>`;  
+        der.innerHTML += `<div class="reporte-item">${user.nombre} - ${vivienda.toUpperCase()} - HAB ${hab} <button class="btn-liberar" onclick="liberar('${vivienda}','${hab}','${cama}')">LIBERAR</button></div>`;  
+      });  
+    });  
+  });  
+}  
+  
+async function liberar(vivienda, habitacion, cama) {  
+  await fetch('/api/liberar', {  
+    method: 'POST',  
+    headers: {'Content-Type': 'application/json'},  
+    body: JSON.stringify({vivienda, habitacion, cama})  
+  });  
+  loadData();  
+  renderReportes();  
+}  
+  
+function closeModals() {  
+  document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));  
+  document.getElementById('form-reserva').classList.add('hidden');  
+  document.getElementById('form-reserva').reset();  
+}  
