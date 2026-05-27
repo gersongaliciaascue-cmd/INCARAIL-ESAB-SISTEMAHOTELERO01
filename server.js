@@ -77,4 +77,9 @@ app.post('/api/liberar', (req, res) => {
     return res.json({ ok: false, msg: 'La cama no existe o ya está libre' });  
   }  
 });  
-  
+
+// ESTO FALTABA - Sin esto Render no inicia  
+app.listen(PORT, () => {  
+  console.log(`Servidor corriendo en puerto ${PORT}`);  
+});  
+
